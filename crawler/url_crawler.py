@@ -1,3 +1,7 @@
+# Crawl the transcript urls from the content table
+# for further deep crawling
+#
+
 import time
 import random
 from bs4 import BeautifulSoup
@@ -6,11 +10,8 @@ import myProxy
 import requests
 from settings import ROOT_1 as root
 
-def random_sleep():
-	time.sleep(random.randint(5,11))
 
-
-def scrawl_urls(max_page=5000):
+def crawl_urls(max_page=5000):
 
 	def save_urls(html, check_dup=False):
 		soup = BeautifulSoup(html.text, "lxml")
@@ -89,7 +90,7 @@ def scrawl_urls(max_page=5000):
 
 def main():
 	start = time.time()
-	scrawl_urls(5119)
+	crawl_urls(5119)	# number of pages to be crawled
 	end = time.time()
 	print('Time consuming: %.3f seconds.' % (end - start))
 
