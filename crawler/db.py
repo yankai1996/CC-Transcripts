@@ -1,17 +1,62 @@
+# Data Layer
+#
+
 import pymysql
 from datetime import datetime
 from settings import db_config
 
 db = pymysql.connect(
-	host=db_config.host, 
-	port=db_config.port,
-	user=db_config.user, 
-	passwd=db_config.passwd, 
-	db=db_config.db, 
+	host=	db_config.host, 
+	port=	db_config.port,
+	user=	db_config.user, 
+	passwd=	db_config.passwd, 
+	db=		db_config.db, 
 	charset=db_config.charset
 )
 
 cursor = db.cursor()
+
+
+# create tables if not extist in the database
+def init_tables():
+	cursor.execute("""
+		SELECT COUNT(*)
+        FROM information_schema.tables
+        WHERE table_name = 'transcript'
+		""")
+	if cursor.fetchone()[0] != 1:
+		create_table = """
+			CREATE TABLE transcript (
+				url VARCHAR(256) NOT NULL, 
+				title VARCHAR(256) NULL , 
+				pub_time VARCHAR(64) NULL , 
+				company VARCHAR(128) NULL , 
+				body MEDIUMTEXT NULL, 
+				PRIMARY KEY (url(256))
+				) 
+			ENGINE = InnoDB;
+		"""
+		cursor.execute(create_table)
+		db.commit()
+
+	cursor.execute("""
+		SELECT COUNT(*)
+        FROM information_schema.tables
+        WHERE table_name = 'failed_page'
+		""")
+	if cursor.fetchone()[0] != 1:
+		create_table = """
+			CREATE TABLE transcript (
+				page_number INT(256) NOT NULL, 
+				PRIMARY KEY (page_number(4))
+				) 
+			ENGINE = InnoDB;
+		"""
+		cursor.execute(create_table)
+		db.commit()
+
+init_tables()
+
 
 
 def add_failed_page(page_number):
@@ -44,7 +89,7 @@ def get_failed_pages():
 
 def save_transcript_url(url, crawled=0):
 	try:
-		sql = "INSERT INTO transcript_url (url, crawled) VALUES ('%s', %s)" % (url, crawled)
+		sql = "INSERT INTO transcript (url) VALUES ('%s')" % url
 		cursor.execute(sql)
 		db.commit()
 		return True
@@ -54,7 +99,7 @@ def save_transcript_url(url, crawled=0):
 
 def get_uncrawled_transcript_urls(limit=1):
 	try:
-		sql = "SELECT url FROM transcript_url WHERE crawled = '0' ORDER BY RAND() LIMIT %s" % limit
+		sql = "SELECT url FROM transcript WHERE title = NULL ORDER BY RAND() LIMIT %s" % limit
 		cursor.execute(sql)
 		result = cursor.fetchall()
 		return [str(row[0]) for row in result]
@@ -68,60 +113,51 @@ def save_transcript(url, title, pub_time, company, body):
 		pub_time = pub_time.replace("'","''")
 		company = company.replace("'", "''")
 		body = body.replace("'", "''")
-		sql = (
-			"INSERT INTO transcript "
-			"(url, title, pub_time, company, body) "
-			"VALUES ('%s', '%s', '%s', '%s', '%s')"
-		) % (url, title, pub_time, company, body)
+		sql = """
+			UPDATE transcript
+			SET title = '%s', pub_time = '%s', company = '%s', body = '%s') 
+			WHERE url = '%s'
+		""" % (title, pub_time, company, body, url)
 		cursor.execute(sql)
-		db.commit()
-
-		update = "UPDATE transcript_url SET crawled = 1 WHERE url = '%s'" % url
-		cursor.execute(update)
 		db.commit()
 		return True
 	except Exception as e:
 		print(str(e))
 		return False
 
-def set_crawled(url):
+def get_transcripts(limit=1):
 	try:
-		sql = "UPDATE transcript_url SET crawled = 1 WHERE url = '%s'" % url
+		sql = "SELECT * FROM transcript LIMIT %s" % limit
 		cursor.execute(sql)
-		db.commit()
-		return True
+		result = cursor.fetchall()
+		return list(result)
 	except Exception as e:
-		print(str(e))
-		return False
+		print(e)
+		return []
 
+# view how many transcripts have been crawled
 def summary():
 	try:
-		sql = "SELECT COUNT(url) FROM transcript_url"
+		sql = "SELECT COUNT(url) FROM transcript"
 		cursor.execute(sql)
 		total = cursor.fetchall()[0][0]
 
-		sql = "SELECT COUNT(url) FROM transcript_url WHERE crawled = 1"
+		sql = "SELECT COUNT(url) FROM transcript WHERE title <> NULL"
 		cursor.execute(sql)
 		crawled = cursor.fetchall()[0][0]
 
-		print(str(crawled) + " / " + str(total) + " Crawled")
-
-		sql = "SELECT COUNT(url) FROM transcript"
-		cursor.execute(sql)
-		transcripts = cursor.fetchall()[0][0]
-
-		sql = (
-			"SELECT "
-    		"table_name AS `Table`, "
-    		"round(((data_length + index_length) / 1024 / 1024), 3) `Size in MB` "
-			"FROM information_schema.TABLES "
-			"WHERE table_schema = 'seekingalpha' "
-    		"AND table_name = 'transcript';"
-    	)
+		sql = ("""
+			SELECT
+    		table_name AS `Table`,
+    		round(((data_length + index_length) / 1024 / 1024), 3) `Size in MB`
+			FROM information_schema.TABLES
+			WHERE table_schema = 'seekingalpha'
+    		AND table_name = 'transcript';
+    	""")
 		cursor.execute(sql)
 		size = cursor.fetchall()[0][1]
 
-		print(str(transcripts) + " records, " + str(size)+ " MB.")
+		print("%d / %d Crawled, %f MB" % (crawled, total, size))
 		print(datetime.now())
 
 	except Exception as e:
