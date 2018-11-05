@@ -1,3 +1,6 @@
+# Proxies that send request and return the webpage
+#
+
 import grequests
 import requests
 import random
@@ -127,9 +130,6 @@ def get_by_abuyun(url, g=False):
 
 
 def get_by_luminati(url, g=False):
-
-
-
 	return _get_by_auth_proxy(url, luminati_config, g)
 
 
