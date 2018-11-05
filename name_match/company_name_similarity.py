@@ -7,7 +7,10 @@ import difflib
 import random
 import re
 import decimal
-from company_score_tfidf import keyword_score_map
+import json
+
+with open('company_score_tfidf.json', 'r') as f:
+    keyword_score_map = json.load(fp=f)
 
 class CompanyNameSimilarity:
     
@@ -84,4 +87,9 @@ class CompanyNameSimilarity:
                 score += 1.0
             else:
                 score += float(keyword_score_map[word])
-        return score   
+        return score
+
+if __name__ == "__main__":
+    cm = CompanyNameSimilarity()
+    print(cm.normalize_company_name("Apple Inc."))
+    print(type(keyword_score_map["spiders"]))
