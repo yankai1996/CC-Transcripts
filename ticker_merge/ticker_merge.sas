@@ -1,3 +1,7 @@
+********* Ticker Merge ****************;
+* merge the transcript data with downloaded cusip, permno and company name;
+
+
 libname ticker 'C:\TEMP\ticker_merge';
 
 %macro txt2sas7bdat(name);
