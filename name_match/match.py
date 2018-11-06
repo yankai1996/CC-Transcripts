@@ -1,3 +1,6 @@
+# Match company names from two lists
+# 
+
 from sas7bdat import SAS7BDAT
 import csv
 import re
@@ -6,6 +9,9 @@ from progressbar import progressbar
 
 COMN_FILE = 'conm.sas7bdat'
 CASENAMES_FILE = 'casename.sas7bdat'
+
+
+# get two name lists
 
 comn, casenames = [], []
 
@@ -23,6 +29,10 @@ with SAS7BDAT(CASENAMES_FILE) as f:
 casenames = casenames[1:]
 print(casenames[:5])
 
+
+# match tow lists
+# fn is the matching mathod
+# base is to generalize the similarity
 def match_by(fn, base=1):
 	rows = []
 	with open('matched.csv', 'w', newline='') as csvfile:

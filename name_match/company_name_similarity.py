@@ -1,5 +1,7 @@
 # Copyright @ https://github.com/asamat/compsim
 #
+# Some modifications by Kai Yan based on the original source code.
+#
 
 from collections import defaultdict
 import sys

@@ -1,3 +1,6 @@
+# Check the string matching result using sort ratio
+#
+
 from fuzzywuzzy import fuzz
 from fuzzywuzzy import process
 import csv
