@@ -8,7 +8,7 @@ class DBConfig(object):
 		self.host = 'localhost', 
 		self.port = 3306,
 		self.user = 'root', 
-		self.passwd = '', 
+		self.passwd = 'admin@0225', 
 		self.db = 'seekingalpha', 
 		self.charset = 'utf8'
 		

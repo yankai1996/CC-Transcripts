@@ -3,15 +3,15 @@
 
 import pymysql
 from datetime import datetime
-from settings import db_config
+from settings import db_config as config
 
 db = pymysql.connect(
-	host=	db_config.host, 
-	port=	db_config.port,
-	user=	db_config.user, 
-	passwd=	db_config.passwd, 
-	db=		db_config.db, 
-	charset=db_config.charset
+	host=	config.host, 
+	port=	config.port,
+	user=	config.user, 
+	passwd=	config.passwd, 
+	db=		config.db, 
+	charset=config.charset
 )
 
 cursor = db.cursor()
